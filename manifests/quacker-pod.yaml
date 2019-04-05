@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quackerweb
+  labels:
+    app: quacker
+spec:
+  containers:
+    - name: quacker-app
+      image: gcr.io/omega-metric-236502/quacker:1.0.0
+      ports:
+      - containerPort: 3000

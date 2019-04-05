@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: quackerweb
+ labels:
+   app: quacker
+spec:
+ replicas: 2
+ selector:
+   matchLabels:
+     app: quacker
+ template:
+   metadata:
+     labels:
+       app: quacker
+       tier: web
+   spec:
+     containers:
+     - name: quacker-app
+       image: gcr.io/omega-metric-236502/quacker:1.0.0
+       ports:
+       - containerPort: 3000
