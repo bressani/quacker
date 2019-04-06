@@ -91,3 +91,11 @@ workflows:
               only: /release-.*/
             branches:
               ignore: /.*/
+      - deploy:
+          requires:
+            - publish_image
+          filters:
+            tags:
+              only: /release-.*/
+            branches:
+              ignore: /.*/
