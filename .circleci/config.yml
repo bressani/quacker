@@ -60,7 +60,7 @@ workflows:
               only: /.*/
             branches:
               only: /.*/
-      - deploy_tag:
+      - publish_image:
           requires:
             - test
           filters:
