@@ -30,7 +30,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Config Google Cloud SDK
+          name: Configuring Google Cloud SDK
           command: |
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -38,12 +38,16 @@ jobs:
             gcloud --quiet auth configure-docker
 
       - run:
+          name: Configuring newrelic
+          command: gsutil cp gs://kubernetes-config/newrelic.yml ./config/
+
+      - run:
           name: Building Docker image
           command: |
             docker build -t gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG .
 
       - run:
-          name: Publish Quacker Image in GCR Repository
+          name: Publishing Quacker Image in GCR Repository
           command: |
             docker info
             docker tag gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:latest
@@ -58,7 +62,7 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Config Google Cloud SDK
+          name: Configuring Google Cloud SDK
           command: |
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -66,11 +70,11 @@ jobs:
             gcloud --quiet auth configure-docker
 
       - run:
-          name: Setup cluster credentials
+          name: Setting up cluster credentials
           command: gcloud container clusters get-credentials $GOOGLE_CLUSTER_NAME --region $GOOGLE_COMPUTE_ZONE
 
       - run:
-          name: Setup deployment
+          name: Setting up deployment
           command: kubectl set image deployment/$KUBERNETES_DEPLOYMENT_NAME ${KUBERNETES_DEPLOYMENT_CONTAINER}=gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
 
 workflows:
