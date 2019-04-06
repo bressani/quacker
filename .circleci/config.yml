@@ -71,7 +71,7 @@ jobs:
 
       - run:
           name: Setup deployment
-          command: kubectl set image deployment/$GOOGLE_DEPLOYMENT_NAME ${GOOGLE_DEPLOYMENT_NAME}=gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+          command: kubectl set image deployment/$KUBERNETES_DEPLOYMENT_NAME ${KUBERNETES_DEPLOYMENT_CONTAINER}=gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
 
 workflows:
   version: 2
