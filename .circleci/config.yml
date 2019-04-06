@@ -1,0 +1,70 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      - run:
+          name: Building Docker throught docker-compose
+          command: docker-compose build
+
+      - run:
+          name: Creating database
+          command: |
+            docker-compose run --rm -e RAILS_ENV=test web rake db:setup
+
+      - run:
+          name: Running tests
+          command: |
+            docker-compose run --rm -e RAILS_ENV=test web rspec
+
+  publish_image:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Config Google Cloud SDK
+          command: |
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            gcloud --quiet auth configure-docker
+
+      - run:
+          name: Building Docker image
+          command: |
+            docker build -t gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG .
+
+      - run:
+          name: Publish Quacker Image in GCR Repository
+          command: |
+            docker info
+            docker tag gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:latest
+            docker push gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+            docker push gcr.io/${GOOGLE_PROJECT_ID}/$CIRCLE_PROJECT_REPONAME:latest
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - deploy_tag:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /release-.*/
+            branches:
+              ignore: /.*/
